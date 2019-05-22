@@ -48,21 +48,24 @@ if (!class_exists('\Firebase\JWT\JWT')) {
     }
 }
 
-if (!isset($CFG->bigbluebuttonbn)) {
+if (!isset($CFG->bigbluebuttonbn) && !PHPUNIT_TEST) {
     $CFG->bigbluebuttonbn = array();
 }
 
-if (file_exists(dirname(__FILE__).'/config.php')) {
-    require_once(dirname(__FILE__).'/config.php');
-}
+if (isset($CFG->bigbluebuttonbn)) {
 
-/*
- * DURATIONCOMPENSATION: Feature removed by configuration
- */
-$CFG->bigbluebuttonbn['scheduled_duration_enabled'] = 0;
-/*
- * Remove this block when restored
- */
+    if (file_exists(dirname(__FILE__) . '/config.php')) {
+        require_once(dirname(__FILE__) . '/config.php');
+    }
+
+    /*
+     * DURATIONCOMPENSATION: Feature removed by configuration
+     */
+    $CFG->bigbluebuttonbn['scheduled_duration_enabled'] = 0;
+    /*
+     * Remove this block when restored
+     */
+}
 
  /** @var BIGBLUEBUTTONBN_DEFAULT_SERVER_URL string of default bigbluebutton server url */
 const BIGBLUEBUTTONBN_DEFAULT_SERVER_URL = 'http://test-install.blindsidenetworks.com/bigbluebutton/';
