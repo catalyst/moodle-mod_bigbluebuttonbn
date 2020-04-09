@@ -26,55 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-global $CFG;
+require_once(__DIR__ . '/bootstrap.php');
 
-// JWT is included in Moodle 3.7 core, but a local package is still needed for backward compatibility.
-if (!class_exists('\Firebase\JWT\JWT')) {
-    if (file_exists($CFG->libdir.'/php-jwt/src/JWT.php')) {
-        require_once($CFG->libdir.'/php-jwt/src/JWT.php');
-    } else {
-        require_once($CFG->dirroot.'/mod/bigbluebuttonbn/vendor/firebase/php-jwt/src/JWT.php');
-    }
-}
-
-if (!isset($CFG->bigbluebuttonbn)) {
-    $CFG->bigbluebuttonbn = array();
-}
-
-if (file_exists(dirname(__FILE__).'/config.php')) {
-    require_once(dirname(__FILE__).'/config.php');
-}
-
-/*
- * DURATIONCOMPENSATION: Feature removed by configuration
- */
-$CFG->bigbluebuttonbn['scheduled_duration_enabled'] = 0;
-/*
- * Remove this block when restored
- */
-
-/** @var BIGBLUEBUTTONBN_DEFAULT_SERVER_URL string of default bigbluebutton server url */
-const BIGBLUEBUTTONBN_DEFAULT_SERVER_URL = 'http://test-install.blindsidenetworks.com/bigbluebutton/';
-/** @var BIGBLUEBUTTONBN_DEFAULT_SHARED_SECRET string of default bigbluebutton server shared secret */
-const BIGBLUEBUTTONBN_DEFAULT_SHARED_SECRET = '8cd8ef52e8e101574e400365b55e11a6';
-/** @var BIGBLUEBUTTONBN_LOG_EVENT_ADD string of event add for bigbluebuttonbn_logs */
-const BIGBLUEBUTTONBN_LOG_EVENT_ADD = 'Add';
-/** @var BIGBLUEBUTTONBN_LOG_EVENT_EDIT string of event edit for bigbluebuttonbn_logs */
-const BIGBLUEBUTTONBN_LOG_EVENT_EDIT = 'Edit';
-/** @var BIGBLUEBUTTONBN_LOG_EVENT_CREATE string of event create for bigbluebuttonbn_logs */
-const BIGBLUEBUTTONBN_LOG_EVENT_CREATE = 'Create';
-/** @var BIGBLUEBUTTONBN_LOG_EVENT_JOIN string of event join for bigbluebuttonbn_logs */
-const BIGBLUEBUTTONBN_LOG_EVENT_JOIN = 'Join';
-/** @var BIGBLUEBUTTONBN_LOG_EVENT_PLAYED string of event record played for bigbluebuttonbn_logs */
-const BIGBLUEBUTTONBN_LOG_EVENT_PLAYED = 'Played';
-/** @var BIGBLUEBUTTONBN_LOG_EVENT_LOGOUT string of event logout for bigbluebuttonbn_logs */
-const BIGBLUEBUTTONBN_LOG_EVENT_LOGOUT = 'Logout';
-/** @var BIGBLUEBUTTONBN_LOG_EVENT_IMPORT string of event import for bigbluebuttonbn_logs */
-const BIGBLUEBUTTONBN_LOG_EVENT_IMPORT = 'Import';
-/** @var BIGBLUEBUTTONBN_LOG_EVENT_DELETE string of event delete for bigbluebuttonbn_logs */
-const BIGBLUEBUTTONBN_LOG_EVENT_DELETE = 'Delete';
-/** @var BIGBLUEBUTTON_LOG_EVENT_CALLBACK string defines the bigbluebuttonbn callback event */
-const BIGBLUEBUTTON_LOG_EVENT_CALLBACK = 'Callback';
 /**
  * Indicates API features that the bigbluebuttonbn supports.
  *
