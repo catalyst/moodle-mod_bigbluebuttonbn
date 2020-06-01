@@ -48,14 +48,15 @@ if (!class_exists('\Firebase\JWT\JWT')) {
     }
 }
 
-if (!isset($CFG->bigbluebuttonbn) && !PHPUNIT_TEST) {
-    $CFG->bigbluebuttonbn = array();
-}
+// Do not declare new $CFG variables if unit tests are running
+// as it can cause "unexpected new $CFG->xxx value" warnings.
+if (!defined('PHPUNIT_TEST') || !PHPUNIT_TEST) {
+    if (!isset($CFG->bigbluebuttonbn)) {
+        $CFG->bigbluebuttonbn = array();
+    }
 
-if (isset($CFG->bigbluebuttonbn)) {
-
-    if (file_exists(dirname(__FILE__) . '/config.php')) {
-        require_once(dirname(__FILE__) . '/config.php');
+    if (file_exists(dirname(__FILE__).'/config.php')) {
+        require_once(dirname(__FILE__).'/config.php');
     }
 
     /*
