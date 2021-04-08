@@ -72,6 +72,9 @@ class config {
             'recordingstatus_enabled' => false,
             'meetingevents_enabled' => false,
             'participant_moderator_default' => '0',
+            'participant_moderatorapproval' => '0',
+            'participant_guestlink_enabled' => '1',
+            'participant_guestlink_default' => '0',
             'scheduled_duration_enabled' => false,
             'scheduled_duration_compensation' => '10',
             'scheduled_pre_opening' => '10',
@@ -84,6 +87,7 @@ class config {
             'recordings_imported_editable' => false,
             'recordings_preview_default' => true,
             'recordings_preview_editable' => false,
+            'recordings_validate_url' => true,
             'recording_default' => true,
             'recording_editable' => true,
             'recording_icons_enabled' => true,
@@ -102,7 +106,25 @@ class config {
             'clienttype_editable' => true,
             'muteonstart_default' => false,
             'muteonstart_editable' => false,
-
+            'disablecam_default' => false,
+            'disablecam_editable' => true,
+            'disablemic_default' => false,
+            'disablemic_editable' => true,
+            'disableprivatechat_default' => false,
+            'disableprivatechat_editable' => true,
+            'disablepublicchat_default' => false,
+            'disablepublicchat_editable' => true,
+            'disablenote_default' => false,
+            'disablenote_editable' => true,
+            'hideuserlist_default' => false,
+            'hideuserlist_editable' => true,
+            'lockedlayout_default' => false,
+            'lockedlayout_editable' => true,
+            'lockonjoin_default' => false,
+            'lockonjoin_editable' => true,
+            'lockonjoinconfigurable_default' => false,
+            'lockonjoinconfigurable_editable' => true,
+            'welcome_default' => '',
         );
     }
 
@@ -118,6 +140,15 @@ class config {
             return;
         }
         return $defaultvalues[$setting];
+    }
+
+    /**
+     * Validates if recording settings are enabled.
+     *
+     * @return boolean
+     */
+    public static function guestlinks_enabled() {
+        return (boolean)self::get('participant_guestlink');
     }
 
     /**
@@ -182,6 +213,7 @@ class config {
                'preuploadpresentation_enabled' => self::get('preuploadpresentation_enabled'),
                'sendnotifications_enabled' => self::get('sendnotifications_enabled'),
                'recordings_enabled' => self::get('recordings_enabled'),
+               'meetingevents_enabled' => self::get('meetingevents_enabled'),
                'recordings_html_default' => self::get('recordings_html_default'),
                'recordings_html_editable' => self::get('recordings_html_editable'),
                'recordings_deleted_default' => self::get('recordings_deleted_default'),
@@ -190,6 +222,7 @@ class config {
                'recordings_imported_editable' => self::get('recordings_imported_editable'),
                'recordings_preview_default' => self::get('recordings_preview_default'),
                'recordings_preview_editable' => self::get('recordings_preview_editable'),
+               'recordings_validate_url' => self::get('recordings_validate_url'),
                'recording_default' => self::get('recording_default'),
                'recording_editable' => self::get('recording_editable'),
                'recording_icons_enabled' => self::get('recording_icons_enabled'),
@@ -207,6 +240,25 @@ class config {
                'clienttype_default' => self::get('clienttype_default'),
                'muteonstart_editable' => self::get('muteonstart_editable'),
                'muteonstart_default' => self::get('muteonstart_default'),
+               'disablecam_editable' => self::get('disablecam_editable'),
+               'disablecam_default' => self::get('disablecam_default'),
+               'disablemic_editable' => self::get('disablemic_editable'),
+               'disablemic_default' => self::get('disablemic_default'),
+               'disableprivatechat_editable' => self::get('disableprivatechat_editable'),
+               'disableprivatechat_default' => self::get('disableprivatechat_default'),
+               'disablepublicchat_editable' => self::get('disablepublicchat_editable'),
+               'disablepublicchat_default' => self::get('disablepublicchat_default'),
+               'disablenote_editable' => self::get('disablenote_editable'),
+               'disablenote_default' => self::get('disablenote_default'),
+               'hideuserlist_editable' => self::get('hideuserlist_editable'),
+               'hideuserlist_default' => self::get('hideuserlist_default'),
+               'lockedlayout_editable' => self::get('lockedlayout_editable'),
+               'lockedlayout_default' => self::get('lockedlayout_default'),
+               'lockonjoin_editable' => self::get('lockonjoin_editable'),
+               'lockonjoin_default' => self::get('lockonjoin_default'),
+               'lockonjoinconfigurable_editable' => self::get('lockonjoinconfigurable_editable'),
+               'lockonjoinconfigurable_default' => self::get('lockonjoinconfigurable_default'),
+               'welcome_default' => self::get('welcome_default'),
           );
     }
 }

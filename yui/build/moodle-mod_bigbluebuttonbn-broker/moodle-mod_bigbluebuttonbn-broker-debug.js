@@ -33,7 +33,7 @@ M.mod_bigbluebuttonbn.broker = {
      */
     init: function(bigbluebuttonbn) {
         this.datasource = new Y.DataSource.Get({
-            source: M.cfg.wwwroot + "/mod/bigbluebuttonbn/bbb_broker.php?"
+            source: M.cfg.wwwroot + "/mod/bigbluebuttonbn/bbb_ajax.php?sesskey=" + M.cfg.sesskey + "&"
         });
         this.bigbluebuttonbn = bigbluebuttonbn;
     },
@@ -166,8 +166,25 @@ M.mod_bigbluebuttonbn.broker = {
                 }
             }
         });
+    },
+
+    completionValidate: function(qs) {
+        this.datasource.sendRequest({
+            request: qs,
+            callback: {
+                success: function(e) {
+                    if (e.data.status) {
+                        var message = M.util.get_string('completionvalidatestatetriggered', 'bigbluebuttonbn');
+                        M.mod_bigbluebuttonbn.helpers.alertError(message, 'info');
+                        return;
+                    }
+                }
+            }
+        });
     }
+
 };
+
 
 
 }, '@VERSION@', {

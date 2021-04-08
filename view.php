@@ -55,7 +55,7 @@ $bbbsession['coursename'] = $course->fullname;
 $bbbsession['cm'] = $cm;
 $bbbsession['bigbluebuttonbn'] = $bigbluebuttonbn;
 // In locallib.
-bigbluebuttonbn_view_bbbsession_set($PAGE->context, $bbbsession);
+mod_bigbluebuttonbn\locallib\bigbluebutton::view_bbbsession_set($PAGE->context, $bbbsession);
 
 // Validates if the BigBlueButton server is working.
 $serverversion = bigbluebuttonbn_get_server_version();  // In locallib.
@@ -103,10 +103,11 @@ if (!has_any_capability(['moodle/category:manage', 'mod/bigbluebuttonbn:join'], 
     exit;
 }
 
-$activitystatus = bigbluebuttonbn_view_session_config($bbbsession, $id, $bn);
+$activitystatus = bigbluebuttonbn_view_session_config($bbbsession, $id);
 
 // Output starts.
 echo $OUTPUT->header();
+echo $OUTPUT->heading(format_string($bigbluebuttonbn->name));
 
 bigbluebuttonbn_view_groups($bbbsession);
 
