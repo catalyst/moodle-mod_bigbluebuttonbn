@@ -102,6 +102,8 @@ class mod_bigbluebuttonbn_mod_form extends moodleform_mod {
         $this->bigbluebuttonbn_mform_add_block_user_role_mapping($mform, $participantlist);
         // Add block 'Schedule'.
         $this->bigbluebuttonbn_mform_add_block_schedule($mform, $this->current);
+        // Add block accessmodal
+        $this->bigbluebuttonbn_mform_add_block_accessmodal($mform, $cfg, $bigbluebuttonbn);
         // Add block 'client Type'.
         $this->bigbluebuttonbn_mform_add_block_clienttype($mform, $cfg);
         // Add standard elements, common to all modules.
@@ -150,6 +152,8 @@ class mod_bigbluebuttonbn_mod_form extends moodleform_mod {
             if (!empty($this->current->completionattendance)) {
                 $defaultvalues['completionattendanceenabled'] = 1;
             }
+            // Accesspolicy: Fill correct data from stored string.
+            $defaultvalues['accessmodaltext'] = $defaultvalues['accesspolicy'];
         }
     }
 
@@ -494,6 +498,108 @@ class mod_bigbluebuttonbn_mod_form extends moodleform_mod {
     }
 
     /**
+     * Function for showing details of the lock settings for the room.
+     *
+     * @param object $mform
+     * @param array $cfg
+     * @return void
+     */
+    private function bigbluebuttonbn_mform_add_block_locksettings(&$mform, $cfg) {
+        $mform->addElement('header', 'lock', get_string('mod_form_locksettings', 'bigbluebuttonbn'));
+
+        $locksettings = false;
+
+        $field = ['type' => 'hidden', 'name' => 'disablecam', 'data_type' => PARAM_INT, 'description_key' => null];
+        if ($cfg['disablecam_editable']) {
+            $field['type'] = 'checkbox';
+            $field['description_key'] = 'mod_form_field_disablecam';
+            $locksettings = true;
+        }
+        $this->bigbluebuttonbn_mform_add_element($mform, $field['type'], $field['name'], $field['data_type'],
+            $field['description_key'], $cfg['disablecam_default']);
+
+        $field = ['type' => 'hidden', 'name' => 'disablemic', 'data_type' => PARAM_INT, 'description_key' => null];
+        if ($cfg['disablemic_editable']) {
+            $field['type'] = 'checkbox';
+            $field['description_key'] = 'mod_form_field_disablemic';
+            $locksettings = true;
+        }
+        $this->bigbluebuttonbn_mform_add_element($mform, $field['type'], $field['name'], $field['data_type'],
+            $field['description_key'], $cfg['disablemic_default']);
+
+        $field = ['type' => 'hidden', 'name' => 'disableprivatechat', 'data_type' => PARAM_INT, 'description_key' => null];
+        if ($cfg['disableprivatechat_editable']) {
+            $field['type'] = 'checkbox';
+            $field['description_key'] = 'mod_form_field_disableprivatechat';
+            $locksettings = true;
+        }
+        $this->bigbluebuttonbn_mform_add_element($mform, $field['type'], $field['name'], $field['data_type'],
+            $field['description_key'], $cfg['disableprivatechat_default']);
+
+        $field = ['type' => 'hidden', 'name' => 'disablepublicchat', 'data_type' => PARAM_INT, 'description_key' => null];
+        if ($cfg['disablepublicchat_editable']) {
+            $field['type'] = 'checkbox';
+            $field['description_key'] = 'mod_form_field_disablepublicchat';
+            $locksettings = true;
+        }
+        $this->bigbluebuttonbn_mform_add_element($mform, $field['type'], $field['name'], $field['data_type'],
+            $field['description_key'], $cfg['disablepublicchat_default']);
+
+        $field = ['type' => 'hidden', 'name' => 'disablenote', 'data_type' => PARAM_INT, 'description_key' => null];
+        if ($cfg['disablenote_editable']) {
+            $field['type'] = 'checkbox';
+            $field['description_key'] = 'mod_form_field_disablenote';
+            $locksettings = true;
+        }
+        $this->bigbluebuttonbn_mform_add_element($mform, $field['type'], $field['name'], $field['data_type'],
+            $field['description_key'], $cfg['disablenote_default']);
+
+        $field = ['type' => 'hidden', 'name' => 'hideuserlist', 'data_type' => PARAM_INT, 'description_key' => null];
+        if ($cfg['hideuserlist_editable']) {
+            $field['type'] = 'checkbox';
+            $field['description_key'] = 'mod_form_field_hideuserlist';
+            $locksettings = true;
+        }
+        $this->bigbluebuttonbn_mform_add_element($mform, $field['type'], $field['name'], $field['data_type'],
+            $field['description_key'], $cfg['hideuserlist_default']);
+
+        $field = ['type' => 'hidden', 'name' => 'lockedlayout', 'data_type' => PARAM_INT, 'description_key' => null];
+        if ($cfg['lockedlayout_editable']) {
+            $field['type'] = 'checkbox';
+            $field['description_key'] = 'mod_form_field_lockedlayout';
+            $locksettings = true;
+        }
+        $this->bigbluebuttonbn_mform_add_element($mform, $field['type'], $field['name'], $field['data_type'],
+            $field['description_key'], $cfg['lockedlayout_default']);
+
+        $field = ['type' => 'hidden', 'name' => 'lockonjoin', 'data_type' => PARAM_INT, 'description_key' => null];
+        if ($cfg['lockonjoin_editable']) {
+            $field['type'] = 'checkbox';
+            $field['description_key'] = 'mod_form_field_lockonjoin';
+            $locksettings = true;
+        }
+        $this->bigbluebuttonbn_mform_add_element($mform, $field['type'], $field['name'], $field['data_type'],
+            $field['description_key'], $cfg['lockonjoin_default']);
+
+        $field = ['type' => 'hidden', 'name' => 'lockonjoinconfigurable', 'data_type' => PARAM_INT, 'description_key' => null];
+        if ($cfg['lockonjoinconfigurable_editable']) {
+            $field['type'] = 'checkbox';
+            $field['description_key'] = 'mod_form_field_lockonjoinconfigurable';
+            $locksettings = true;
+        }
+        $this->bigbluebuttonbn_mform_add_element($mform, $field['type'], $field['name'], $field['data_type'],
+            $field['description_key'], $cfg['lockonjoinconfigurable_default']);
+
+        // Output message if no settings.
+        if (!$locksettings) {
+            $field = ['type' => 'static', 'name' => 'no_locksettings',
+                'defaultvalue' => get_string('mod_form_field_nosettings', 'bigbluebuttonbn')];
+            $this->bigbluebuttonbn_mform_add_element($mform, $field['type'], $field['name'], null, null,
+                $field['defaultvalue']);
+        }
+    }
+
+    /**
      * Function for showing details of the recording settings for the room.
      *
      * @param object $mform
@@ -687,6 +793,31 @@ class mod_bigbluebuttonbn_mod_form extends moodleform_mod {
         $mform->addElement('date_time_selector', 'closingtime',
             get_string('mod_form_field_closingtime', 'bigbluebuttonbn'), array('optional' => true));
         $mform->setDefault('closingtime', 0);
+    }
+
+    private function bigbluebuttonbn_mform_add_block_accessmodal(&$mform, &$cfg, &$bigbluebuttonbn) {
+        global $PAGE;
+
+        if ($cfg['accessmodal_editable']) {
+            $mform->addElement('header', 'accessmodal', get_string('mod_form_block_accessmodal', 'bigbluebuttonbn'));
+
+            $textfieldoptions = [
+                'trusttext' => false,
+                'subdirs' => false,
+                'maxfiles' => -1,
+                'maxbytes' => 1,
+                'context' => $PAGE->context,
+                'enable_filemanagement' => false
+            ];
+            $mform->addElement('editor', 'accessmodaltext', get_string('mod_form_field_accessmodal', 'bigbluebuttonbn'), null, $textfieldoptions);
+            $mform->setType('accessmodaltext', PARAM_RAW);
+            // Hack alert! Formatting is not stored, so transformation must be done.
+            $value = empty($bigbluebuttonbn->accesspolicy) ? $cfg['accessmodal_default'] : $bigbluebuttonbn->accesspolicy;
+            $mform->getElement('accessmodaltext')->setValue(['text' => $value]);
+        } else  {
+            $mform->addElement('hidden', 'accessmodaltext', $cfg['accessmodal_default']);
+            $mform->setType('accessmodaltext', PARAM_RAW);
+        }
     }
 
     /**

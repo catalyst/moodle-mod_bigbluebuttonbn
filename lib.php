@@ -705,6 +705,10 @@ function bigbluebuttonbn_process_pre_save_instance(&$bigbluebuttonbn) {
     if (!property_exists($bigbluebuttonbn, 'guestlinkid') ) {
         $bigbluebuttonbn->guestlinkid = bigbluebuttonbn_random_password(12);
     }
+
+    // Get the correct access policy data.
+    $accesspolicy = $bigbluebuttonbn->accessmodaltext;
+    $bigbluebuttonbn->accesspolicy = is_array($accesspolicy) ? $accesspolicy['text'] : $accesspolicy;
 }
 
 /**

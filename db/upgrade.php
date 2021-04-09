@@ -228,6 +228,10 @@ function xmldb_bigbluebuttonbn_upgrade($oldversion = 0) {
     }
 
     if ($oldversion < 2019101002) {
+        upgrade_mod_savepoint(true, 2019101002, 'bigbluebuttonbn');
+    }
+
+    if ($oldversion < 2020050500) {
 
         $fielddefinition = array('type' => XMLDB_TYPE_INTEGER, 'precision' => '1', 'unsigned' => null,
             'notnull' => XMLDB_NOTNULL, 'sequence' => null, 'default' => 0, 'previous' => 'muteonstart');
@@ -275,7 +279,7 @@ function xmldb_bigbluebuttonbn_upgrade($oldversion = 0) {
             $fielddefinition);
 
         // Bigbluebuttonbn savepoint reached.
-        upgrade_mod_savepoint(true, 2019101002, 'bigbluebuttonbn');
+        upgrade_mod_savepoint(true, 2020050500, 'bigbluebuttonbn');
     }
 
     if ($oldversion < 2019101004) {
@@ -307,6 +311,26 @@ function xmldb_bigbluebuttonbn_upgrade($oldversion = 0) {
             'notnull' => XMLDB_NOTNULL, 'sequence' => null, 'default' => 0, 'previous' => null);
         xmldb_bigbluebuttonbn_add_change_field($dbman, 'bigbluebuttonbn', 'moderatorapproval', $fielddefinition);
         upgrade_mod_savepoint(true, 2019101006, 'bigbluebuttonbn');
+    }
+
+    if ($oldversion < 2020050502) {
+        // Add index to bigbluebuttonbn_logs (Fix for CONTRIB-8157).
+        xmldb_bigbluebuttonbn_index_table($dbman, 'bigbluebuttonbn_logs', 'courseid',
+            ['courseid']);
+        xmldb_bigbluebuttonbn_index_table($dbman, 'bigbluebuttonbn_logs', 'log',
+            ['log']);
+        xmldb_bigbluebuttonbn_index_table($dbman, 'bigbluebuttonbn_logs', 'logrow',
+            ['courseid', 'bigbluebuttonbnid', 'userid', 'log']);
+        // Update db version tag.
+        upgrade_mod_savepoint(true, 2020050502, 'bigbluebuttonbn');
+    }
+    if ($oldversion < 2020050503) {
+        // Add access policy field.
+        $fielddefinition = array('type' => XMLDB_TYPE_TEXT, 'precision' => null, 'unsigned' => null,
+            'notnull' => null, 'sequence' => null, 'default' => null, 'previous' => 'lockonjoinconfigurable');
+        xmldb_bigbluebuttonbn_add_change_field($dbman, 'bigbluebuttonbn', 'accesspolicy',
+            $fielddefinition);
+        upgrade_mod_savepoint(true, 2020050503, 'bigbluebuttonbn');
     }
     return true;
 }

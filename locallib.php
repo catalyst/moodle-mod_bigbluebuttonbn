@@ -274,10 +274,10 @@ function bigbluebuttonbn_get_recordings_array_fetch($meetingidsarray) {
  *
  * @return array
  */
-function bigbluebuttonbn_get_recordings_array_fetch_page($mids) {
+function bigbluebuttonbn_get_recordings_array_fetch_page($mids, $rids = []) {
     $recordings = array();
     // Do getRecordings is executed using a method GET (supported by all versions of BBB).
-    $url = \mod_bigbluebuttonbn\locallib\bigbluebutton::action_url('getRecordings', ['meetingID' => implode(',', $mids)]);
+    $url = \mod_bigbluebuttonbn\locallib\bigbluebutton::action_url('getRecordings', ['meetingID' => implode(',', $mids), 'recordID' => implode(',', $rids)]);
     $xml = bigbluebuttonbn_wrap_xml_load_file($url);
     if ($xml && $xml->returncode == 'SUCCESS' && isset($xml->recordings)) {
         // If there were meetings already created.
@@ -1635,10 +1635,18 @@ function bigbluebuttonbn_get_recording_data_row_preview_images($playback) {
         if ($CFG->bigbluebuttonbn_recordings_validate_url && !bigbluebuttonbn_is_valid_resource(trim($image['url']))) {
             return '';
         }
+
+        if ((bool)\mod_bigbluebuttonbn\locallib\config::get('recordings_proxy_playback')) {
+            $parseUrl = parse_url($image['url']);
+            $url = "./proxy_presentation.php{$parseUrl['path']}";
+        } else {
+            $url = $image['url'];
+        }
+
         $recordingpreview .= html_writer::start_tag('div', array('class' => ''));
         $recordingpreview .= html_writer::empty_tag(
             'img',
-            array('src' => trim($image['url']) . '?' . time(), 'class' => 'recording-thumbnail pull-left')
+            array('src' => trim($url) . '?' . time(), 'class' => 'recording-thumbnail pull-left')
         );
         $recordingpreview .= html_writer::end_tag('div');
     }
@@ -2746,6 +2754,10 @@ function bigbluebuttonbn_settings_record(&$renderer) {
             'recording_hide_button_editable',
             $renderer->render_group_element_checkbox('recording_hide_button_editable', 0)
         );
+        $renderer->render_group_element(
+            'recording_hide_button_activityonly',
+            $renderer->render_group_element_checkbox('recording_hide_button_activityonly', 0)
+        );
     }
 }
 
@@ -2821,6 +2833,10 @@ function bigbluebuttonbn_settings_showrecordings(&$renderer) {
         $renderer->render_group_element(
             'recordings_validate_url',
             $renderer->render_group_element_checkbox('recordings_validate_url', 1)
+        );
+        $renderer->render_group_element(
+            'recordings_proxy_playback',
+            $renderer->render_group_element_checkbox('recordings_proxy_playback', 0)
         );
     }
 }
@@ -2936,6 +2952,29 @@ function bigbluebuttonbn_settings_userlimit(&$renderer) {
         $renderer->render_group_element(
             'userlimit_editable',
             $renderer->render_group_element_checkbox('userlimit_editable', 0)
+        );
+    }
+}
+
+/**
+ * Helper function renders access modal settings if the feature is enabled.
+ *
+ * @param object $renderer
+ *
+ * @return void
+ */
+function bigbluebuttonbn_settings_accessmodal(&$renderer) {
+    // Configuration for "accessmodal" feature.
+    if ((boolean) \mod_bigbluebuttonbn\settings\validator::section_accessmodal_shown()) {
+        $renderer->render_group_header('accessmodal');
+
+        $renderer->render_group_element(
+            'accessmodal_default',
+            $renderer->render_group_element_editor('accessmodal_default', '', PARAM_RAW)
+        );
+        $renderer->render_group_element(
+            'accessmodal_editable',
+            $renderer->render_group_element_checkbox('accessmodal_editable', 0)
         );
     }
 }
@@ -3563,6 +3602,109 @@ function bigbluebuttonbn_has_html5_client() {
     $checkurl = \mod_bigbluebuttonbn\locallib\bigbluebutton::root() . "html5client/check";
     $curlinfo = bigbluebuttonbn_wrap_xml_load_file_curl_request($checkurl, 'HEAD');
     return (isset($curlinfo['http_code']) && $curlinfo['http_code'] == 200);
+}
+
+/**
+ * Setup the bbbsession variable that is used all accross the plugin.
+ *
+ * @param object $context
+ * @param array $bbbsession
+ * @return void
+ */
+function bigbluebuttonbn_view_bbbsession_set($context, &$bbbsession) {
+    global $CFG, $USER;
+    // User data.
+    $bbbsession['username'] = fullname($USER);
+    $bbbsession['userID'] = $USER->id;
+    // User roles.
+    $bbbsession['administrator'] = is_siteadmin($bbbsession['userID']);
+    $participantlist = bigbluebuttonbn_get_participant_list($bbbsession['bigbluebuttonbn'], $context);
+    $bbbsession['moderator'] = bigbluebuttonbn_is_moderator($context, $participantlist);
+    $bbbsession['managerecordings'] = ($bbbsession['administrator']
+        || has_capability('mod/bigbluebuttonbn:managerecordings', $context));
+    $bbbsession['importrecordings'] = ($bbbsession['managerecordings']);
+    // Server data.
+    $bbbsession['modPW'] = $bbbsession['bigbluebuttonbn']->moderatorpass;
+    $bbbsession['viewerPW'] = $bbbsession['bigbluebuttonbn']->viewerpass;
+    // Database info related to the activity.
+    $bbbsession['meetingid'] = $bbbsession['bigbluebuttonbn']->meetingid . '-' . $bbbsession['course']->id . '-' .
+    $bbbsession['bigbluebuttonbn']->id;
+    $bbbsession['meetingname'] = $bbbsession['bigbluebuttonbn']->name;
+    $bbbsession['meetingdescription'] = $bbbsession['bigbluebuttonbn']->intro;
+    // Extra data for setting up the Meeting.
+    $bbbsession['userlimit'] = intval((int) \mod_bigbluebuttonbn\locallib\config::get('userlimit_default'));
+    if ((boolean) \mod_bigbluebuttonbn\locallib\config::get('userlimit_editable')) {
+        $bbbsession['userlimit'] = intval($bbbsession['bigbluebuttonbn']->userlimit);
+    }
+    $bbbsession['voicebridge'] = $bbbsession['bigbluebuttonbn']->voicebridge;
+    if ($bbbsession['bigbluebuttonbn']->voicebridge > 0) {
+        $bbbsession['voicebridge'] = 70000 + $bbbsession['bigbluebuttonbn']->voicebridge;
+    }
+    $bbbsession['wait'] = $bbbsession['bigbluebuttonbn']->wait;
+    $bbbsession['record'] = $bbbsession['bigbluebuttonbn']->record;
+    $bbbsession['recordallfromstart'] = $CFG->bigbluebuttonbn_recording_all_from_start_default;
+    if ($CFG->bigbluebuttonbn_recording_all_from_start_editable) {
+        $bbbsession['recordallfromstart'] = $bbbsession['bigbluebuttonbn']->recordallfromstart;
+    }
+    $bbbsession['recordhidebutton'] = $CFG->bigbluebuttonbn_recording_hide_button_default;
+    if ($CFG->bigbluebuttonbn_recording_hide_button_editable) {
+        $bbbsession['recordhidebutton'] = $bbbsession['bigbluebuttonbn']->recordhidebutton;
+    }
+
+    // If the recording button should be hidden in activity only rooms, force recording off.
+    if ($CFG->bigbluebuttonbn_recording_hide_button_activityonly &&
+        $bbbsession['bigbluebuttonbn']->type == BIGBLUEBUTTONBN_TYPE_ROOM_ONLY) {
+        $bbbsession['record'] = "0";
+        $bbbsession['recordhidebutton'] = "1";
+    }
+
+    $bbbsession['welcome'] = $bbbsession['bigbluebuttonbn']->welcome;
+    if (!isset($bbbsession['welcome']) || $bbbsession['welcome'] == '') {
+        $bbbsession['welcome'] = get_string('mod_form_field_welcome_default', 'bigbluebuttonbn');
+    }
+    if ($bbbsession['bigbluebuttonbn']->record) {
+        // Check if is enable record all from start.
+        if ($bbbsession['recordallfromstart']) {
+            $bbbsession['welcome'] .= '<br><br>' . get_string(
+                'bbbrecordallfromstartwarning',
+                'bigbluebuttonbn'
+            );
+        } else {
+            $bbbsession['welcome'] .= '<br><br>' . get_string('bbbrecordwarning', 'bigbluebuttonbn');
+        }
+    }
+    $bbbsession['openingtime'] = $bbbsession['bigbluebuttonbn']->openingtime;
+    $bbbsession['closingtime'] = $bbbsession['bigbluebuttonbn']->closingtime;
+    $bbbsession['muteonstart'] = $bbbsession['bigbluebuttonbn']->muteonstart;
+    // Lock settings.
+    $bbbsession['disablecam'] = $bbbsession['bigbluebuttonbn']->disablecam;
+    $bbbsession['disablemic'] = $bbbsession['bigbluebuttonbn']->disablemic;
+    $bbbsession['disableprivatechat'] = $bbbsession['bigbluebuttonbn']->disableprivatechat;
+    $bbbsession['disablepublicchat'] = $bbbsession['bigbluebuttonbn']->disablepublicchat;
+    $bbbsession['disablenote'] = $bbbsession['bigbluebuttonbn']->disablenote;
+    $bbbsession['hideuserlist'] = $bbbsession['bigbluebuttonbn']->hideuserlist;
+    $bbbsession['lockedlayout'] = $bbbsession['bigbluebuttonbn']->lockedlayout;
+    $bbbsession['lockonjoin'] = $bbbsession['bigbluebuttonbn']->lockonjoin;
+    $bbbsession['lockonjoinconfigurable'] = $bbbsession['bigbluebuttonbn']->lockonjoinconfigurable;
+    // Additional info related to the course.
+    $bbbsession['context'] = $context;
+    // Metadata (origin).
+    $bbbsession['origin'] = 'Moodle';
+    $bbbsession['originVersion'] = $CFG->release;
+    $parsedurl = parse_url($CFG->wwwroot);
+    $bbbsession['originServerName'] = $parsedurl['host'];
+    $bbbsession['originServerUrl'] = $CFG->wwwroot;
+    $bbbsession['originServerCommonName'] = '';
+    $bbbsession['originTag'] = 'moodle-mod_bigbluebuttonbn (' . get_config('mod_bigbluebuttonbn', 'version') . ')';
+    $bbbsession['bnserver'] = bigbluebuttonbn_is_bn_server();
+    // Setting for clienttype, assign flash if not enabled, or default if not editable.
+    $bbbsession['clienttype'] = BIGBLUEBUTTON_CLIENTTYPE_FLASH;
+    if (\mod_bigbluebuttonbn\locallib\config::clienttype_enabled()) {
+        $bbbsession['clienttype'] = \mod_bigbluebuttonbn\locallib\config::get('clienttype_default');
+    }
+    if (\mod_bigbluebuttonbn\locallib\config::get('clienttype_editable') && isset($bbbsession['bigbluebuttonbn']->clienttype)) {
+        $bbbsession['clienttype'] = $bbbsession['bigbluebuttonbn']->clienttype;
+    }
 }
 
 /**
