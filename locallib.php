@@ -1732,6 +1732,10 @@ function bigbluebuttonbn_get_recording_data_row_types($recording, $bbbsession) {
     $recordingtypes = html_writer::start_tag('div', array('id' => $id, 'data-imported' => $dataimported,
         'data-meetingid' => $recording['meetingID'], 'data-recordingid' => $recording['recordID'],
         'title' => $title, $visibility => $visibility));
+
+    // Ensure the Playback options always come in the same order regardless of return order from the API
+    krsort($recording['playbacks']);
+
     foreach ($recording['playbacks'] as $playback) {
         $recordingtypes .= bigbluebuttonbn_get_recording_data_row_type($recording, $bbbsession, $playback);
     }
