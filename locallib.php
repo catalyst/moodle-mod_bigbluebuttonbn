@@ -3592,6 +3592,9 @@ function bigbluebuttonbn_include_recording_data_row_type($recording, $bbbsession
     if (array_key_exists('restricted', $playback) && strtolower($playback['restricted']) == 'false') {
         return true;
     }
+    if ($playback['type'] === 'capture') {
+        return has_capability('mod/bigbluebuttonbn:viewcapture', $bbbsession['context']);
+    }
     // All types that are not statistics are included.
     if ($playback['type'] != 'statistics') {
         return true;
