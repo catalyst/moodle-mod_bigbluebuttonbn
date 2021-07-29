@@ -234,6 +234,22 @@ switch (strtolower($action)) {
         $overrides = array('meetingid' => $bbbsession['meetingid']);
         bigbluebuttonbn_log($bbbsession['bigbluebuttonbn'], BIGBLUEBUTTONBN_LOG_EVENT_PLAYED, $overrides);
 
+        // For captures, return the direct recording link (will need to grab response HTML and fetch direct url).
+        // Note: Needs to happen before proxy handling.
+        if ($rtype === 'capture') {
+            $curl = new curl();
+            $curlresults = $curl->get($href);
+            // Fetch video source url, and if matches, append the url to the
+            // link, removing all new lines to ensure the tags are more
+            // consistently placed.
+            $curlresults = str_replace(["\r\n", "\r", "\n"], ' ', $curlresults);
+            preg_match_all('/<source src="([^"]*?)" type="video/', $curlresults, $matches);
+            $videofile = $matches[1][0] ?? '';
+            if (!empty($videofile)) {
+                $href .= $videofile;
+            }
+        }
+
         if ((bool)\mod_bigbluebuttonbn\locallib\config::get('recordings_proxy_playback')) {
             $parseurl = parse_url($href);
 
