@@ -523,6 +523,7 @@ $string['view_recording_list_duration'] = 'Duration';
 $string['view_recording_list_recording'] = 'Recording';
 $string['view_recording_button_import'] = 'Import recording links';
 $string['view_recording_button_return'] = 'Go back';
+$string['view_recording_format_capture'] = 'Download';
 $string['view_recording_format_notes'] = 'Notes';
 $string['view_recording_format_podcast'] = 'Podcast';
 $string['view_recording_format_presentation'] = 'Presentation';
