@@ -472,6 +472,8 @@ $string['guestlink_form_guestlink_disabled'] = 'The administrator has not enable
 $string['guestlink_form_guestlink_disabled_instance'] = 'The guest access link for this room has been disabled.';
 $string['guestlink_form_guestlink_access_expired'] = 'The guest access link for this room has expired.';
 
+$string['filter_form_showall'] = 'Show unrecorded meetings';
+
 $string['starts_at'] = 'Starts';
 $string['started_at'] = 'Started';
 $string['ends_at'] = 'Ends';
