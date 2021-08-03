@@ -26,7 +26,7 @@ const TIME_BEFORE_FLAGGING_AS_NOT_RECORDED = 2 * WEEKSECS;
 // This is a limit documented in code @  bigbluebuttonbn_get_recordings_array_fetch_page function call.
 const BBB_API_GET_RECORDINGS_RECORDS_PER_REQUEST = 25;
 // Default processing limit for backlog of BBB sessions.
-const DEFAULT_PROCESSING_LIMIT = 100;
+const DEFAULT_PROCESSING_LIMIT = 1000;
 
 /**
  * A scheduled task to fetch the recordings' metadata and store it for further reporting
