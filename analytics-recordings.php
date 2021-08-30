@@ -66,7 +66,22 @@ $PAGE->set_title($title);
 $PAGE->set_cacheable(false);
 $PAGE->set_heading($heading);
 
-$table = new \mod_bigbluebuttonbn\analytics\analytics_for_recordings_table('bigbluebuttonbn_recordings_metrics_table', $PAGE->url);
+// Setup filter form for the main table.
+$form = new \mod_bigbluebuttonbn\form\analytics_recording_filter_form();
+if ($formdata = $form->get_data()) {
+    $filterstart = $formdata->filterstart;
+    $filtershowall = $formdata->filterall;
+} else {
+    $filterstart = time() - 2 * WEEKSECS;
+    $filtershowall = false;
+}
+
+$table = new \mod_bigbluebuttonbn\analytics\analytics_for_recordings_table(
+    'bigbluebuttonbn_recordings_metrics_table',
+    $PAGE->url,
+    $filtershowall,
+    $filterstart
+);
 $table->is_downloading($download, 'bigbluebuttonbn-recordinganalytics-' . time());
 
 if (!$download) {
@@ -112,7 +127,7 @@ $table->close_recordset();
 $table->pageable(true);
 $meetingcreateevents = $table->rawdata;
 
-$table->query_db($tablepagesize); // No limit, fetch all rows.
+$table->query_db(2 * $tablepagesize); // Fetch twice the pagesize, we will filter from there
 $table->close_recordset();
 
 if (isset($meetingsummary->meta)) {
@@ -200,6 +215,8 @@ if (!$download && !empty($meetingcreateevents)) {
 }
 
 if (!$download) {
+    // Output the filter form.
+    $output .= '<br><div class="d-flex align-items-start">'.$form->render().'</div>';
     echo $output;
 }
 

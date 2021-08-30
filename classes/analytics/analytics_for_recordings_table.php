@@ -29,7 +29,7 @@ class analytics_for_recordings_table extends \table_sql {
     private $datetimeformat;
     private $durationformat;
 
-    public function __construct($uniqueid, \moodle_url $url, $perpage = 100) {
+    public function __construct($uniqueid, \moodle_url $url, bool $showall, int $timefilter, $perpage = 100) {
         parent::__construct($uniqueid);
         $this->datetimeformat = get_string('strftimedatetimetimezone', 'bigbluebuttonbn');
         $this->durationformat = get_string('strftimetime24seconds', 'bigbluebuttonbn');
@@ -64,8 +64,14 @@ class analytics_for_recordings_table extends \table_sql {
             get_string('view_analytics_processingduration', 'bigbluebuttonbn'),
             get_string('view_analytics_filesize', 'bigbluebuttonbn'),
         ]);
+        $this->column_style_all('text-align', 'right');
+        $this->column_style('status', 'text-align', 'left');
+        $this->column_style('filesize', 'text-align', 'left');
+
         $this->pagesize = $perpage;
         $systemcontext = \context_system::instance();
+        $this->timefilter = $timefilter;
+        $this->showall = $showall;
         $this->context = $systemcontext;
         $this->collapsible(false);
         $this->sortable(false, 'timecreated', SORT_DESC); // This is due to the data being stored in the meta field as json.
@@ -94,7 +100,10 @@ class analytics_for_recordings_table extends \table_sql {
 
     public function col_createtime($row) {
         $data = json_decode($row->meta);
-        return userdate(($data->createtime ?? $row->timecreated) / 1000, $this->datetimeformat);
+        $time = !empty($data->createtime) ? $data->createtime / 1000 : $row->timecreated;
+        // Store time in class to use in filtering.
+        $this->time = $time;
+        return userdate($time, $this->datetimeformat);
     }
 
     public function col_meetingduration($row) {
@@ -165,5 +174,32 @@ class analytics_for_recordings_table extends \table_sql {
         return [$this->sort_default_column => $this->sort_default_order];
     }
 
-}
+    public function build_table() {
+        if ($this->rawdata instanceof \Traversable && !$this->rawdata->valid()) {
+            return;
+        }
+        if (!$this->rawdata) {
+            return;
+        }
 
+        $counter = 0;
+        foreach ($this->rawdata as $row) {
+            $formattedrow = $this->format_row($row);
+
+            // Once the row is formatted, we can decide on whether it should be displayed.
+            if ($counter > $this->pagesize) {
+                break;
+            }
+            // Check for time filter.
+            if ($this->time < $this->timefilter) {
+                continue;
+            }
+            if (!($this->showall) && ($formattedrow['status'] === 'Expired' || $formattedrow['status'] === 'Invalid')) {
+                continue;
+            }
+
+            $this->add_data_keyed($formattedrow, $this->get_row_class($row));
+            $counter++;
+        }
+    }
+}
