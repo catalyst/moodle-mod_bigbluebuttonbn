@@ -60,14 +60,37 @@ if (!empty($recordingid)) {
     }
 
     $bbbinstanceid = $meetingidparts[2];
+    $basemeetingid = $meetingidparts[0];
 
     // MeetingID can sometimes have [xxx] at the end. Needs sanitisation.
     if (strpos($bbbinstanceid, '[') !== false) {
         $bbbinstanceid = substr($bbbinstanceid, 0, strpos($bbbinstanceid, '['));
     }
 
-    $viewinstance = bigbluebuttonbn_view_instance_bigbluebuttonbn($bbbinstanceid);
-    require_login($viewinstance['course'], true, $viewinstance['cm']);
+
+    // Check if the user has appropriate access to the meeting resources.
+    $meetingsinstances = $DB->get_records('bigbluebuttonbn', ['meetingid' => $basemeetingid], '', 'id, course');
+    $capable = false;
+    foreach ($meetingsinstances as $bbbinstance) {
+        // Checks the BBB instances to see if the user has capabilities for viewing - breaking on first success.
+        if (bigbluebuttonbn_has_capability($bbbinstance->id, 'mod/bigbluebuttonbn:view')) {
+            $capable = true;
+            break;
+        }
+    }
+
+    // If the user is not capable of viewing the recording/activity, then ensure an appropriate exception is thrown
+    if (!$capable) {
+        if (!$cm = get_coursemodule_from_instance('bigbluebuttonbn', $bbbinstance->id)) {
+            throw new moodle_exception('nopermissions');
+        }
+        $context = context_module::instance($cm->id);
+        throw new required_capability_exception($context, 'mod/bigbluebuttonbn:view', 'nopermissions', '');
+    }
+
+    // Check for full access - doing a normal redirect on the last check (e.g. if it fails).
+    $viewinstance = bigbluebuttonbn_view_instance_bigbluebuttonbn($bbbinstance->id);
+    require_login($viewinstance['course'], true, $viewinstance['cm'], $setwantsurltome = true, $preventredirect = false);
 } else {
     require_login();
 }
