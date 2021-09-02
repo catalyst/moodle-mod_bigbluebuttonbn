@@ -122,6 +122,23 @@ class renderer {
     }
 
     /**
+     * Render a configpasswordunmask element in a group.
+     *
+     * @param string    $name
+     * @param object    $default
+     * @param string    $type
+     *
+     * @return Object
+     */
+    public function render_group_element_configpasswordunmask($name, $default = null, $type = PARAM_RAW) {
+        $item = new \admin_setting_configpasswordunmask('bigbluebuttonbn_' . $name,
+            get_string('config_' . $name, 'bigbluebuttonbn'),
+            get_string('config_' . $name . '_description', 'bigbluebuttonbn'),
+            $default);
+        return $item;
+    }
+
+    /**
      * Render a checkbox element in a group.
      *
      * @param string    $name
