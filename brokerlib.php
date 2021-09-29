@@ -507,8 +507,22 @@ function bigbluebuttonbn_broker_recording_action_delete($params, $recordings) {
         }
     }
     // Second: Execute the actual delete.
+    $bbbrecordingdeletestatus = bigbluebuttonbn_delete_recordings($params['id']);
+    // Third: Also delete any session analytics associated with it, regardless of current settings.
+    $records = $DB->get_records('bigbluebuttonbn_logs', [
+        'log' => BIGBLUEBUTTON_LOG_EVENT_SUMMARY,
+        'meetingid' => $params['idx'],
+        'recordid' => $params['id'],
+    ]);
+    if (!empty($records)) {
+        $analyticsdeletionstatus = $DB->delete_records('bigbluebuttonbn_logs', [
+            'log' => BIGBLUEBUTTON_LOG_EVENT_SUMMARY,
+            'meetingid' => $params['idx'],
+            'recordid' => $params['id'],
+        ]);
+    }
     return array(
-        'status' => bigbluebuttonbn_delete_recordings($params['id'])
+        'status' => $analyticsdeletionstatus || $bbbrecordingdeletestatus
     );
 }
 
