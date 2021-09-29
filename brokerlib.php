@@ -522,7 +522,7 @@ function bigbluebuttonbn_broker_recording_action_delete($params, $recordings) {
         ]);
     }
     return array(
-        'status' => $analyticsdeletionstatus || $bbbrecordingdeletestatus
+        'status' => !empty($analyticsdeletionstatus) || $bbbrecordingdeletestatus
     );
 }
 
