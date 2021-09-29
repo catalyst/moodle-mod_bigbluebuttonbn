@@ -182,14 +182,9 @@ class analytics_for_recordings_table extends \table_sql {
             return;
         }
 
-        $counter = 0;
         foreach ($this->rawdata as $row) {
             $formattedrow = $this->format_row($row);
 
-            // Once the row is formatted, we can decide on whether it should be displayed.
-            if ($counter > $this->pagesize) {
-                break;
-            }
             // Check for time filter.
             if ($this->time < $this->timefilter) {
                 continue;
@@ -199,7 +194,6 @@ class analytics_for_recordings_table extends \table_sql {
             }
 
             $this->add_data_keyed($formattedrow, $this->get_row_class($row));
-            $counter++;
         }
     }
 }

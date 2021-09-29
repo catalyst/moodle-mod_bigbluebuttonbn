@@ -59,28 +59,29 @@ if (!empty($bn)) {
 }
 require_capability('mod/bigbluebuttonbn:recordinganalytics', context_system::instance());
 
+
+// Setup filter form for the main table.
+$form = new \mod_bigbluebuttonbn\form\analytics_recording_filter_form();
+if (!$formdata = $form->get_data()) {
+    $formdata = new stdClass();
+    $formdata->filterstart = optional_param('filterstart', time() - 2 * WEEKSECS, PARAM_INT);
+    $formdata->filterall = optional_param('filterall', false, PARAM_BOOL);
+}
+
+$form->set_data($formdata);
+
 // Print the page header.
-$pageurl = new moodle_url('/mod/bigbluebuttonbn/analytics-recordings.php', ['bn' => $bn]);
+$pageurl = new moodle_url('/mod/bigbluebuttonbn/analytics-recordings.php', array_merge(convert_to_array($formdata), ['bn' => $bn]));
 $PAGE->set_url($pageurl);
 $PAGE->set_title($title);
 $PAGE->set_cacheable(false);
 $PAGE->set_heading($heading);
 
-// Setup filter form for the main table.
-$form = new \mod_bigbluebuttonbn\form\analytics_recording_filter_form();
-if ($formdata = $form->get_data()) {
-    $filterstart = $formdata->filterstart;
-    $filtershowall = $formdata->filterall;
-} else {
-    $filterstart = time() - 2 * WEEKSECS;
-    $filtershowall = false;
-}
-
 $table = new \mod_bigbluebuttonbn\analytics\analytics_for_recordings_table(
     'bigbluebuttonbn_recordings_metrics_table',
     $PAGE->url,
-    $filtershowall,
-    $filterstart
+    $formdata->filterall,
+    $formdata->filterstart
 );
 $table->is_downloading($download, 'bigbluebuttonbn-recordinganalytics-' . time());
 
