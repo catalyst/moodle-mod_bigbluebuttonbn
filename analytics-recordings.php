@@ -95,21 +95,21 @@ if (!$download) {
 }
 
 // Analytics Report Query.
-$wheresql = "meta IS NOT NULL
+$wheresql = "timecreated > :timecreated
              AND log = :log
+             AND meta IS NOT NULL
              AND userid IS NOT NULL";
 $params = ['log' => BIGBLUEBUTTONBN_LOG_EVENT_CREATE];
 if (!empty($bn) && !empty($bigbluebuttonbn->id)) {
     $wheresql .= " AND bigbluebuttonbnid = :bigbluebuttonbnid";
     $params['bigbluebuttonbnid'] = $bigbluebuttonbn->id;
 }
+$params['timecreated'] = $formdata->filterstart; // Set it to whatever the filter value currently is.
 $table->set_sql('id, meta, userid, timecreated', "{bigbluebuttonbn_logs}", $wheresql, $params);
 $table->define_baseurl($pageurl);
 
 // Add cloned table modifying the query for Past Month instead.
 $pastmonthtable = clone $table;
-$wheresqlwithmonthconstraint = $wheresql;
-$wheresql .= " AND timecreated > :timecreated";
 $params['timecreated'] = time() - (30 * DAYSECS); // Currently set to 1 calendar month.
 $pastmonthtable->set_sql('id, meta, userid, timecreated', "{bigbluebuttonbn_logs}", $wheresql, $params);
 $pastmonthtable->setup();
