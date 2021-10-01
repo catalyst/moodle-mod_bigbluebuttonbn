@@ -54,15 +54,62 @@ class fetch_recording_metadata_task extends \core\task\scheduled_task {
         require_once(__DIR__.'/../../locallib.php');
         global $CFG, $DB;
 
+        // Updates older records with no recordid in meta or log record, to have
+        // them where possible.
+        $sql = "SELECT id, meetingid, meta, timecreated, recordid
+                  FROM {bigbluebuttonbn_logs}
+                 WHERE recordid IS NULL
+                   AND log = :log
+                   AND NOT ".$DB->sql_like('meta', ':recordedfalse', false, false, $notlike = true)."
+                   AND ".$DB->sql_like('meta', ':recordtrue');
+        $createlogswithnorecordid = $DB->get_records_sql($sql, [
+            'log' => BIGBLUEBUTTONBN_LOG_EVENT_CREATE,
+            'recordtrue' => '%"record":"true"%',
+            'recordedfalse' => '%"recorded":false%', // Recording did not happen (set after meeting ended).
+        ], 0, $numberofrecords = 100);
+
+        $foundMatching = 0;
+        $notMatching = 0;
+        foreach ($createlogswithnorecordid as $logentry) {
+            $meta = json_decode($logentry->meta);
+            $recordings = bigbluebuttonbn_get_recordings_array_fetch_page([$logentry->meetingid]);
+            $chosenrecordid = null;
+            $closest = null;
+            foreach ($recordings as $recordid => $recordinginfo) {
+                $starttime = $recordinginfo['startTime'] / 1000;
+                // Validate the startTime of the recording is within the same time as the log entry (+-3 seconds)
+                if (abs($logentry->timecreated - $starttime) > 3) {
+                    continue;
+                }
+                if ($closest === null || abs($logentry->timecreated - $closest) > abs($starttime - $logentry->timecreated)) {
+                    $closest = $starttime;
+                    $chosenrecordid = $recordid;
+                }
+            }
+
+            if (!empty($chosenrecordid)) {
+                $meta->recordid = $chosenrecordid;
+            } else {
+                // Flag the fact this process had run and was not successful.
+                // (Probably not safe to just mark as not recorded completely).
+                $meta->falsifiedat = time(); // Add to flag this record to know how it was removed in order to reprocess if required.
+                $meta->recorded = false;
+            }
+            // Update the log entries.
+            $DB->update_record('bigbluebuttonbn_logs', ['id' => $logentry->id, 'recordid' => $meta->recordid, 'meta' => json_encode($meta)], $bulk = true);
+        }
+
         // Updates older records to have recordid set on the log record and not
         // just the meta, for all older records without this set already.
         $sql = "SELECT id, meta
                   FROM {bigbluebuttonbn_logs}
                  WHERE recordid IS NULL
                    AND log = :log
+                   AND ".$DB->sql_like('meta', ':recordtrue')."
                    AND ".$DB->sql_like('meta', ':recordid');
         $createlogswithnorecordid = $DB->get_records_sql($sql, [
             'log' => BIGBLUEBUTTONBN_LOG_EVENT_CREATE,
+            'recordtrue' => '%"record":true%',
             'recordid' => '%"recordid":"%', // Recordid exists.
         ]);
         foreach ($createlogswithnorecordid as $logentry) {
