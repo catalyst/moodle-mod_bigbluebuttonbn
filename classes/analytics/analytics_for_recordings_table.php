@@ -83,7 +83,7 @@ class analytics_for_recordings_table extends \table_sql {
 
     public function col_status($row) {
         $data = json_decode($row->meta);
-        if (!empty($data->playbackduration)) {
+        if (!empty($data->playbackduration) && empty($data->recorded)) {
             return "Ready"; // Recording details known and stored.
         } else if (!isset($data->recordid)) {
             return "Invalid"; // No record id on the entry, no way to check for recording.

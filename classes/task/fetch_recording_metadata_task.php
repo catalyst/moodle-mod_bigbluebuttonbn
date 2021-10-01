@@ -66,21 +66,27 @@ class fetch_recording_metadata_task extends \core\task\scheduled_task {
             'log' => BIGBLUEBUTTONBN_LOG_EVENT_CREATE,
             'recordtrue' => '%"record":"true"%',
             'recordedfalse' => '%"recorded":false%', // Recording did not happen (set after meeting ended).
-        ], 0, $numberofrecords = 100);
+        ], 0, $numberofrecords = 20);
 
-        $foundMatching = 0;
-        $notMatching = 0;
         foreach ($createlogswithnorecordid as $logentry) {
             $meta = json_decode($logentry->meta);
             $recordings = bigbluebuttonbn_get_recordings_array_fetch_page([$logentry->meetingid]);
             $chosenrecordid = null;
             $closest = null;
+
+            // Loops through, skipping entries outside of a threshold, and tries
+            // to set the $closest entry to the time the meeting started. This
+            // is most likely the relevant recording.
             foreach ($recordings as $recordid => $recordinginfo) {
                 $starttime = $recordinginfo['startTime'] / 1000;
                 // Validate the startTime of the recording is within the same time as the log entry (+-3 seconds)
                 if (abs($logentry->timecreated - $starttime) > 3) {
                     continue;
                 }
+                // If there has not been a closest set yet, or if there is a
+                // starttime closer to the time the log entry was created than
+                // the previously chosen $closest, then update the $closest
+                // value to whichever is closer.
                 if ($closest === null || abs($logentry->timecreated - $closest) > abs($starttime - $logentry->timecreated)) {
                     $closest = $starttime;
                     $chosenrecordid = $recordid;
