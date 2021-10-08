@@ -67,16 +67,27 @@ if (!empty($recordingid)) {
         $bbbinstanceid = substr($bbbinstanceid, 0, strpos($bbbinstanceid, '['));
     }
 
-
     // Check if the user has appropriate access to the meeting resources.
-    $meetingsinstances = $DB->get_records('bigbluebuttonbn', ['meetingid' => $basemeetingid], '', 'id, course');
     $capable = false;
-    foreach ($meetingsinstances as $bbbinstance) {
-        // Checks the BBB instances to see if the user has capabilities for viewing - breaking on first success.
-        if (bigbluebuttonbn_has_capability($bbbinstance->id, 'mod/bigbluebuttonbn:view')) {
-            $capable = true;
-            break;
+    $originalinstance = bigbluebuttonbn_view_instance_bigbluebuttonbn($bbbinstanceid);
+    if (!$originalinstance['course']->visible || !bigbluebuttonbn_has_capability($bbbinstanceid, 'mod/bigbluebuttonbn:view')) {
+        $meetingsinstances = $DB->get_records('bigbluebuttonbn', ['meetingid' => $basemeetingid], '', 'id, course');
+        foreach ($meetingsinstances as $bbbinstance) {
+            // Skip the already checked course.
+            if ($bbbinstance->id === $bbbinstanceid) {
+                continue;
+            }
+
+            // Checks the BBB instances to see if the user has capabilities for viewing - breaking on first success.
+            $course = get_course($bbbinstance->course);
+            if ($course->visible && bigbluebuttonbn_has_capability($bbbinstance->id, 'mod/bigbluebuttonbn:view')) {
+                $capable = true;
+                $bbbinstanceid = $bbbinstance->id;
+                break;
+            }
         }
+    } else {
+        $capable = true;
     }
 
     // If the user is not capable of viewing the recording/activity, then ensure an appropriate exception is thrown
@@ -89,7 +100,7 @@ if (!empty($recordingid)) {
     }
 
     // Check for full access - doing a normal redirect on the last check (e.g. if it fails).
-    $viewinstance = bigbluebuttonbn_view_instance_bigbluebuttonbn($bbbinstance->id);
+    $viewinstance = bigbluebuttonbn_view_instance_bigbluebuttonbn($bbbinstanceid);
     require_login($viewinstance['course'], true, $viewinstance['cm'], $setwantsurltome = true, $preventredirect = false);
 } else {
     require_login();
