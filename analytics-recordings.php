@@ -98,8 +98,12 @@ if (!$download) {
 $wheresql = "timecreated > :timecreated
              AND log = :log
              AND meta IS NOT NULL
+             AND ".$DB->sql_like('meta', ':recordtrue')."
              AND userid IS NOT NULL";
-$params = ['log' => BIGBLUEBUTTONBN_LOG_EVENT_CREATE];
+$params = [
+    'log' => BIGBLUEBUTTONBN_LOG_EVENT_CREATE,
+    'recordtrue' => '%"record":"true"%'
+];
 if (!empty($bn) && !empty($bigbluebuttonbn->id)) {
     $wheresql .= " AND bigbluebuttonbnid = :bigbluebuttonbnid";
     $params['bigbluebuttonbnid'] = $bigbluebuttonbn->id;
