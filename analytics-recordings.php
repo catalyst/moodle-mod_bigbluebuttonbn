@@ -23,8 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_bigbluebuttonbn\plugin;
-
 require(__DIR__.'/../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once(__DIR__.'/locallib.php');
@@ -155,6 +153,19 @@ if (!$download && !empty($meetingcreateevents)) {
             }, 0);
         };
 
+        // Returns an hours:minutes:seconds string based on the seconds provided.
+        $getdurationformat = function($durationinseconds) :string {
+            $hoursraw = $durationinseconds / HOURSECS;
+            $hours = floor($hoursraw);
+            $hoursfraction = $hoursraw - $hours;
+            $minutesraw = $hoursfraction * 60;
+            $minutes = floor($minutesraw);
+            $secondsfraction = $minutesraw - $minutes;
+            $secondsraw = $secondsfraction * 60;
+            $seconds = floor($secondsraw);
+            return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+        };
+
         // Count all valid events.
         $totaleventswithrecordings = array_reduce($events, function($acc, $event){
             $data = json_decode($event->meta);
@@ -172,7 +183,7 @@ if (!$download && !empty($meetingcreateevents)) {
             [get_string('view_analytics_total_storage_used', 'bigbluebuttonbn'), display_size($filesizetotal)],
             [
                 get_string('view_analytics_total_playback_duration', 'bigbluebuttonbn'),
-                userdate($sumkeyfunc('playbackduration') / 1000, get_string('strftimetime24seconds', 'bigbluebuttonbn'), 'UTC')
+                $getdurationformat($sumkeyfunc('playbackduration') / 1000)
             ],
             [
                 get_string('view_analytics_total_processing_time', 'bigbluebuttonbn'),
@@ -183,17 +194,11 @@ if (!$download && !empty($meetingcreateevents)) {
             ],
             [
                 get_string('view_analytics_average_queue_time', 'bigbluebuttonbn'),
-                userdate(
-                    empty($totaleventswithrecordings) ? 0 : ($sumkeyfunc('queueduration') / 1000 / $totaleventswithrecordings),
-                    get_string('strftimetime24seconds', 'bigbluebuttonbn'),
-                    'UTC')
+                $getdurationformat(empty($totaleventswithrecordings) ? 0 : ($sumkeyfunc('queueduration') / 1000 / $totaleventswithrecordings))
             ],
             [
                 get_string('view_analytics_average_processing_time', 'bigbluebuttonbn'),
-                userdate(
-                    empty($totaleventswithrecordings) ? 0 : ($processingdurationtotalinseconds / $totaleventswithrecordings),
-                    get_string('strftimetime24seconds', 'bigbluebuttonbn'),
-                    'UTC' )
+                $getdurationformat(empty($totaleventswithrecordings) ? 0 : ($processingdurationtotalinseconds / $totaleventswithrecordings),)
             ],
             [
                 get_string('view_analytics_processing_speed', 'bigbluebuttonbn'),
