@@ -666,6 +666,7 @@ $string['view_error_meeting_not_running'] = 'Something went wrong, the meeting i
 $string['view_error_current_state_not_found'] = 'Current state was not found. The recording may have been deleted or the BigBlueButton server is not compatible with the action performed.';
 $string['view_error_action_not_completed'] = 'Action could not be completed';
 $string['view_warning_default_server'] = 'This Moodle server is making use of the BigBlueButton testing server that comes pre-configured by default. It should be replaced for production.';
+$string['view_warning_recording_is_processing'] = 'A recording may be processing and will be shown below once complete. Please be patient, processing times may vary and can take up to a few hours.';
 
 $string['view_room'] = 'View room';
 $string['mod_form_block_clienttype'] = 'Web Client Technology';
