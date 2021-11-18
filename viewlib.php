@@ -150,14 +150,44 @@ function bigbluebuttonbn_view_render(&$bbbsession, $activity) {
  * @return string
  */
 function bigbluebuttonbn_view_render_recording_section(&$bbbsession, $type, $enabledfeatures, &$jsvars) {
+    global $DB, $OUTPUT;
     if ($type == BIGBLUEBUTTONBN_TYPE_ROOM_ONLY) {
         return '';
     }
     $output = '';
     if ($type == BIGBLUEBUTTONBN_TYPE_ALL && $bbbsession['record']) {
+        // Recordings Title.
         $output .= html_writer::start_tag('div', array('id' => 'bigbluebuttonbn_view_recordings_header'));
         $output .= html_writer::tag('h4', get_string('view_section_title_recordings', 'bigbluebuttonbn'));
         $output .= html_writer::end_tag('div');
+
+        // Check and display recording is processing notification if recordings
+        // are or might be currently processing, checking the last meeting for
+        // performance reasons.
+        $sql = "SELECT id, timecreated, meta
+                  FROM {bigbluebuttonbn_logs}
+                 WHERE recordid IS NOT NULL
+                   AND log = :log
+                   AND bigbluebuttonbnid = :bigbluebuttonbnid
+                   AND ".$DB->sql_like('meta', ':recordable')."
+              ORDER BY timecreated DESC
+                 LIMIT 1";
+        $record = $DB->get_record_sql($sql, [
+            'log' => BIGBLUEBUTTONBN_LOG_EVENT_CREATE,
+            'bigbluebuttonbnid' => $bbbsession['bigbluebuttonbn']->id,
+            'recordable' => '%"record":"true"%', // Recording is enabled.
+        ], IGNORE_MISSING);
+        // Check the metadata to check whether the last meeting created is
+        // (probably) being processed and display the warning accordingly.
+        if (!empty($record->meta)) {
+            $meta = json_decode($record->meta);
+            if (!empty($meta) && !isset($meta->recorded) && !isset($meta->recordingprocessingtime)) {
+                // Processing pending notification.
+                $output .= $OUTPUT->notification(
+                    get_string('view_warning_recording_is_processing', 'bigbluebuttonbn'),
+                    'warning');
+            }
+        }
     }
     if ($type == BIGBLUEBUTTONBN_TYPE_RECORDING_ONLY || $bbbsession['record']) {
         $output .= html_writer::start_tag('div', array('id' => 'bigbluebuttonbn_view_recordings_content'));
