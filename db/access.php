@@ -107,6 +107,7 @@ $capabilities = array(
     ),
     // Ability to change the guestlink password.
     'mod/bigbluebuttonbn:guestlink_change_password' => array(
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -117,6 +118,7 @@ $capabilities = array(
     ),
     // Ability to create and view guestlinks.
     'mod/bigbluebuttonbn:guestlink_view' => array(
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -127,6 +129,7 @@ $capabilities = array(
     ),
     // Ability to configure guestlink access on/off.
     'mod/bigbluebuttonbn:guestlink_configure_access' => array(
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(

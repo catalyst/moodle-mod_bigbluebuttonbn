@@ -41,6 +41,7 @@ $string['bigbluebuttonbn:recordinganalytics'] = 'Able to view the analytics for 
 $string['bigbluebuttonbn:managerecordings'] = 'Manage bigbluebuttonbn recordings';
 $string['bigbluebuttonbn:meeting'] = 'Create instances with live meeting capabilities.';
 $string['bigbluebuttonbn:recording'] = 'Create instances with recording capabilities.';
+$string['bigbluebuttonbn:viewcapture'] = 'View recording capture.';
 $string['bigbluebuttonbn'] = 'BigBlueButton';
 $string['indicator:cognitivedepth'] = 'BigBlueButtonBN cognitive';
 $string['indicator:cognitivedepth_help'] = 'This indicator is based on the cognitive depth reached by the student in a BigBlueButtonBN activity.';
