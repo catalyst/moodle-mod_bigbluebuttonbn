@@ -1238,7 +1238,7 @@ function mod_bigbluebuttonbn_core_calendar_provide_event_action(
  *
  * @return bool Success/Failure
  */
-function bigbluebuttonbn_log($bigbluebuttonbn, $event, array $overrides = [], $meta = null) {
+function bigbluebuttonbn_log($bigbluebuttonbn, $event, array $overrides = [], $meta = null, $rawmeta = null) {
     global $DB, $USER;
     $log = new stdClass();
     // Default values.
@@ -1249,6 +1249,8 @@ function bigbluebuttonbn_log($bigbluebuttonbn, $event, array $overrides = [], $m
     $log->timecreated = time();
     $log->log = $event;
     $log->meta = $meta;
+    // Populates the raw json object for this event if provided.
+    $log->rawmeta = $rawmeta;
     // Overrides.
     foreach ($overrides as $key => $value) {
         $log->$key = $value;

@@ -351,6 +351,17 @@ function xmldb_bigbluebuttonbn_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2020050524, 'bigbluebuttonbn');
     }
 
+    if ($oldversion < 2020050526) {
+        // Define field rawmeta to be added to bigbluebuttonbn_logs.
+        $table = new xmldb_table('bigbluebuttonbn_logs');
+        $field = new xmldb_field('rawmeta', XMLDB_TYPE_TEXT, null, null, null, null, null, 'meta');
+        // Conditionally launch add field rawmeta.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Bigbluebuttonbn savepoint reached.
+        upgrade_mod_savepoint(true, 2020050526, 'bigbluebuttonbn');
+    }
 
     return true;
 }

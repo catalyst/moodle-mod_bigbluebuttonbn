@@ -2289,7 +2289,7 @@ function bigbluebuttonbn_process_meeting_events($bigbluebuttonbn, $jsonobj) {
         'polls' => $data->polls
     ];
     // Stores overall meeting summary information.
-    bigbluebuttonbn_log($bigbluebuttonbn, BIGBLUEBUTTON_LOG_EVENT_SUMMARY, $overrides, json_encode($meta));
+    bigbluebuttonbn_log($bigbluebuttonbn, BIGBLUEBUTTON_LOG_EVENT_SUMMARY, $overrides, json_encode($meta), json_encode($jsonobj));
 }
 
 /**
