@@ -601,7 +601,7 @@ function bigbluebuttonbn_broker_recording_ready($params, $bigbluebuttonbn) {
         $overrides = array('meetingid' => $decodedparameters->meeting_id);
         $meta['recordid'] = $decodedparameters->record_id;
         $meta['callback'] = 'recording_ready';
-        bigbluebuttonbn_log($bigbluebuttonbn, BIGBLUEBUTTON_LOG_EVENT_CALLBACK, $overrides, json_encode($meta));
+        bigbluebuttonbn_log($bigbluebuttonbn, BIGBLUEBUTTON_LOG_EVENT_CALLBACK, $overrides, json_encode($meta), json_encode($decodedparameters));
         header('HTTP/1.0 202 Accepted');
     } catch (Exception $e) {
         $error = 'Caught exception: '.$e->getMessage();
