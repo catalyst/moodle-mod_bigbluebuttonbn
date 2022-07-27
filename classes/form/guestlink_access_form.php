@@ -42,13 +42,11 @@ class guestlink_access_form extends \moodleform {
      * @return void
      */
     public function definition() {
-        global $CFG, $DB, $OUTPUT, $PAGE;
         $mform = &$this->_form;
 
         // Guest Access URL.
-        $inviteparticipantselement = $mform->createElement('text', 'guestlinkurl', get_string('view_guestlink_label', 'bigbluebuttonbn'), ['readonly' => true, 'size' => 60]);
-        $mform->setType('guestlinkurl', PARAM_TEXT);
-        $mform->setDefault('guestlinkurl', $this->_customdata['guestlinkurl']);
+        $guestlinkelement = \html_writer::div($this->_customdata['guestlinkurl'], 'form-control readonly', ['id' => 'id_guestlinkurl']);
+        $inviteparticipantselement = $mform->createElement('static', 'guestlinkurl', get_string('view_guestlink_label', 'bigbluebuttonbn'), $guestlinkelement);
 
         $inviteparticipantsgroup = [];
         $inviteparticipantsgroup[] =& $inviteparticipantselement;

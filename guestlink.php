@@ -30,10 +30,15 @@ require_once(__DIR__ . '/locallib.php');
 global $PAGE, $OUTPUT;
 
 $gid = required_param('gid', PARAM_ALPHANUM); // This is required.
+$group = optional_param('group', -1, PARAM_INT);
 $guestname = trim(optional_param('guestname', null, PARAM_TEXT));
 $guestpass = optional_param('guestpass', '', PARAM_TEXT);
-$PAGE->set_url(new moodle_url('/mod/bigbluebuttonbn/guestlink.php',
-        ['gid' => $gid, 'guestname' => $guestname, 'guestpass' => $guestpass]));
+$PAGE->set_url(new moodle_url('/mod/bigbluebuttonbn/guestlink.php', [
+    'gid' => $gid,
+    'group' => $group,
+    'guestname' => $guestname,
+    'guestpass' => $guestpass,
+]));
 $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('standard');
 
@@ -68,6 +73,7 @@ if (!$valid) {
         'guestpasserrormessage' => $guestpasserrormessage,
         'guestnameerrormessage' => $guestnameerrormessage,
         'guestname' => $guestname,
+        'group' => $group,
     ];
 
     echo $OUTPUT->header();
@@ -110,6 +116,12 @@ if (!$valid) {
     $bbbsession['guest'] = true;
 
     \mod_bigbluebuttonbn\locallib\bigbluebutton::view_bbbsession_set($context, $bbbsession);
+
+    // Groups handling
+    if ($group !== -1) {
+        $bbbsession['meetingid'] .= '['.$group.']';
+    }
+
     if (bigbluebuttonbn_is_meeting_running($bbbsession['meetingid'])) {
         $bbbsession['username'] = $guestname;
         // Since the meeting is already running, we just join the session.
