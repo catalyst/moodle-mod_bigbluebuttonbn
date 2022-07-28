@@ -75,9 +75,7 @@ M.mod_bigbluebuttonbn.rooms = {
         if (btn) {
             btn.onclick = function () {
                 var copyText = document.getElementById("id_guestlinkurl");
-                copyText.select();
-                copyText.setSelectionRange(0, 99999); /*For mobile devices*/
-                document.execCommand("copy");
+                navigator.clipboard.writeText(copyText.textContent);
             };
         }
         /* passwordthings */

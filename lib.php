@@ -700,6 +700,7 @@ function bigbluebuttonbn_process_pre_save_instance(&$bigbluebuttonbn) {
         $bigbluebuttonbn->moderatorpass = bigbluebuttonbn_random_password(12);
         $bigbluebuttonbn->viewerpass = bigbluebuttonbn_random_password(12, $bigbluebuttonbn->moderatorpass);
         $bigbluebuttonbn->guestlinkid = bigbluebuttonbn_random_password(12);
+        $bigbluebuttonbn->groupsalt = bigbluebuttonbn_generate_group_salt();
     }
     if (!property_exists($bigbluebuttonbn, 'guestlinkid') ) {
         // Get the guestlinkid column in the bigbluebuttonbn table, and use it if it's not empty, otherwise generate an id.
@@ -1357,6 +1358,26 @@ function bigbluebuttonbn_has_capability($bigbluebuttonbnid, $capability) {
     return true;
 }
 
+/**
+ * Returns a hash based on the group and salt provided.
+ *
+ * @param   int $group id of the group
+ * @param   string $groupsalt salt value as defined in the BBB activity
+ * @return  string the resulting hash
+ */
+function bigbluebuttonbn_generate_group_hash(int $group, string $groupsalt): string {
+    return sha1($groupsalt . $group);
+}
+
+/**
+ * Helper for generating a group salt for BBB activities
+ *
+ * @return string
+ */
+function bigbluebuttonbn_generate_group_salt(): string {
+    // Fix the length of the salt to 12, extra salty!
+    return bigbluebuttonbn_random_password(12);
+}
 
 /**
  * Helper for generating access codes for BBB

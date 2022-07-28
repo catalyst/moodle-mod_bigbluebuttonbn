@@ -249,9 +249,20 @@ function bigbluebuttonbn_view_render_room(&$bbbsession, $activity, &$jsvars) {
         $context = context_module::instance($cm->id);
         if (has_capability('mod/bigbluebuttonbn:guestlink_view', $context)) {
             $guestlink['enabled'] = true;
-            $guestlinkurl = new moodle_url('/mod/bigbluebuttonbn/guestlink.php',
-                ['gid' => $bbbsession['bigbluebuttonbn']->guestlinkid]);
+
+            // Prepare the guest link params.
+            $guestlinkurlparams = ['gid' => $bbbsession['bigbluebuttonbn']->guestlinkid];
+
+            // If a group is set, include it as a parameter in the link.
+            if (isset($bbbsession['group'])) {
+                $guestlinkurlparams['group'] = bigbluebuttonbn_generate_group_hash(
+                    $bbbsession['group'],
+                    $bbbsession['bigbluebuttonbn']->groupsalt
+                );
+            }
+            $guestlinkurl = new moodle_url('/mod/bigbluebuttonbn/guestlink.php', $guestlinkurlparams);
             $guestlink['url'] = $guestlinkurl->__toString();
+
             $hasguestpass = !empty($bbbsession['bigbluebuttonbn']->guestpass);
             $accesscoderequired = (bool) \mod_bigbluebuttonbn\locallib\config::get('participant_guest_requires_access_code');
             $guestlink['required'] = $accesscoderequired;
