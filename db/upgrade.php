@@ -363,6 +363,34 @@ function xmldb_bigbluebuttonbn_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2020050526, 'bigbluebuttonbn');
     }
 
+
+    if ($oldversion < 2020050527) {
+        // Define field groupsalt to be added to bigbluebuttonbn.
+        $table = new xmldb_table('bigbluebuttonbn');
+        $field = new xmldb_field('groupsalt', XMLDB_TYPE_CHAR, '12', null, null, null, null, 'guestlinkexpiresat');
+
+        // Conditionally launch add field groupsalt.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Fill in the salt for existing meetings with a guest link available.
+        $sql  = "SELECT id,
+                        groupsalt
+                   FROM {bigbluebuttonbn}
+                  WHERE guestlinkid IS NOT NULL
+                    AND groupsalt IS NULL";
+        $instances = $DB->get_records_sql($sql);
+        // Sprinkle the salt across all the bigbluebutton activities.
+        foreach ($instances as $instance) {
+            $instance->groupsalt = bigbluebuttonbn_generate_group_salt();
+            $DB->update_record('bigbluebuttonbn', $instance);
+        }
+
+        // Bigbluebuttonbn savepoint reached.
+        upgrade_mod_savepoint(true, 2020050527, 'bigbluebuttonbn');
+    }
+
     return true;
 }
 

@@ -30,12 +30,12 @@ require_once(__DIR__ . '/locallib.php');
 global $PAGE, $OUTPUT;
 
 $gid = required_param('gid', PARAM_ALPHANUM); // This is required.
-$group = optional_param('group', -1, PARAM_INT);
+$grouphash = optional_param('group', '', PARAM_ALPHANUM);
 $guestname = trim(optional_param('guestname', null, PARAM_TEXT));
 $guestpass = optional_param('guestpass', '', PARAM_TEXT);
 $PAGE->set_url(new moodle_url('/mod/bigbluebuttonbn/guestlink.php', [
     'gid' => $gid,
-    'group' => $group,
+    'group' => $grouphash,
     'guestname' => $guestname,
     'guestpass' => $guestpass,
 ]));
@@ -56,6 +56,28 @@ if (!$bigbluebuttonbn->guestlinkenabled) {
     die;
 }
 
+// Fetch the course and cm from the given bbb instance.
+list($course, $cm) = get_course_and_cm_from_instance($bigbluebuttonbn, 'bigbluebuttonbn');
+
+// Validate and resolve the group id for the given hash provided.
+if (!empty($grouphash)) {
+    // Fetch groups.
+    $groups = groups_get_all_groups($course->id, 0, $course->defaultgroupingid);
+    $groupids = array_keys($groups);
+    // Add the "All participants" group as it is not included by default.
+    $groupids[] = 0;
+    $groupid = null;
+
+    // Find the matching group given a hash.
+    foreach ($groupids as $groupid) {
+        $hash = bigbluebuttonbn_generate_group_hash($groupid, $bigbluebuttonbn->groupsalt);
+        // If the hash matches with the one provided.
+        if ($hash === $grouphash) {
+            break;
+        }
+    }
+}
+
 $valid = (!empty($guestname) && ($bigbluebuttonbn->guestpass == $guestpass || !$bigbluebuttonbn->guestpass));
 
 if (!$valid) {
@@ -68,12 +90,23 @@ if (!$valid) {
     if (empty($guestname)) {
         $guestnameerrormessage = true;
     }
-    $context = ['name' => $bigbluebuttonbn->name, 'gid' => $gid,
+
+    // Append the group name in the name of the meeting as well, if required.
+    // This displays similarly when a normal user enters a grouped BBB session.
+    $name = $bigbluebuttonbn->name;
+    if (isset($groupid) && isset($groups[$groupid])) {
+        $group = $groups[$groupid];
+        $name .= " ({$group->name})";
+    }
+
+    $context = [
+        'name' => $name,
+        'gid' => $gid,
         'guestpassenabled' => $bigbluebuttonbn->guestpass,
         'guestpasserrormessage' => $guestpasserrormessage,
         'guestnameerrormessage' => $guestnameerrormessage,
         'guestname' => $guestname,
-        'group' => $group,
+        'group' => $grouphash,
     ];
 
     echo $OUTPUT->header();
@@ -106,7 +139,6 @@ if (!$valid) {
 
     echo $OUTPUT->footer();
 } else {
-    list($course, $cm) = get_course_and_cm_from_instance($bigbluebuttonbn, 'bigbluebuttonbn');
     $context = context_module::instance($cm->id);
     $bbbsession = [];
     $bbbsession['course'] = $course;
@@ -118,8 +150,8 @@ if (!$valid) {
     \mod_bigbluebuttonbn\locallib\bigbluebutton::view_bbbsession_set($context, $bbbsession);
 
     // Groups handling
-    if ($group !== -1) {
-        $bbbsession['meetingid'] .= '['.$group.']';
+    if (isset($groupid)) {
+        $bbbsession['meetingid'] .= '['.$groupid.']';
     }
 
     if (bigbluebuttonbn_is_meeting_running($bbbsession['meetingid'])) {

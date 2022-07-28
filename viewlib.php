@@ -255,7 +255,10 @@ function bigbluebuttonbn_view_render_room(&$bbbsession, $activity, &$jsvars) {
 
             // If a group is set, include it as a parameter in the link.
             if (isset($bbbsession['group'])) {
-                $guestlinkurlparams['group'] = $bbbsession['group'];
+                $guestlinkurlparams['group'] = bigbluebuttonbn_generate_group_hash(
+                    $bbbsession['group'],
+                    $bbbsession['bigbluebuttonbn']->groupsalt
+                );
             }
             $guestlinkurl = new moodle_url('/mod/bigbluebuttonbn/guestlink.php', $guestlinkurlparams);
             $guestlink['url'] = $guestlinkurl->__toString();
