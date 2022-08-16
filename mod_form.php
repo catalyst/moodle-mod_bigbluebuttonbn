@@ -212,6 +212,7 @@ class mod_bigbluebuttonbn_mod_form extends moodleform_mod {
         $defaultexpiryduration = get_config('bigbluebuttonbn', 'config_participant_guestlink_access_duration_expiry_default');
         if (
             isset($data)
+            && !empty($data->guestlinkenabled)
             && $defaultexpiryduration
             && empty($this->current->guestlinkexpiresat)
         ) {
