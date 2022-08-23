@@ -74,3 +74,12 @@
     font-weight: 400;
 }
 
+/* No scrollbars on the guest access url */
+#id_guestlinkurl::-webkit-scrollbar {
+    display: none; /* Chrome, Safari Edge and Opera */
+}
+
+#id_guestlinkurl {
+    -ms-overflow-style: none;  /* IE */
+    scrollbar-width: none;  /* Firefox */
+}
