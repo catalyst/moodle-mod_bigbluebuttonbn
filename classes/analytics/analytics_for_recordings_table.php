@@ -83,19 +83,35 @@ class analytics_for_recordings_table extends \table_sql {
 
     public function col_status($row) {
         $data = json_decode($row->meta);
+
+        // Recording details known and stored.
         if (!empty($data->playbackduration) && empty($data->recorded)) {
-            return "Ready"; // Recording details known and stored.
-        } else if (!isset($data->recordid)) {
-            return "Invalid"; // No record id on the entry, no way to check for recording.
-        } else if ((isset($data->recorded) && $data->recorded == false) || // Not recorded.
-                   (isset($data->record) && $data->record !== "true") // Record functionality not enabled.
+            return "Ready";
+        }
+
+        // No record id on the entry, no way to check for recording.
+        if (!isset($data->recordid)) {
+            return "Invalid";
+        }
+
+        if ((isset($data->recorded) && $data->recorded == false) || // Not recorded.
+            (isset($data->record) && $data->record !== "true") // Record functionality not enabled.
         ) {
             return "Expired"; // Gone past fetch date.
-        } else if (isset($data->lastchecked)) {
-            return "Waiting"; // Still in the re-check period, as this key would not exist otherwise.
-        } else {
-            return "Unknown"; // Not gone past fetch date but no recording details yet.
         }
+
+        // Confirmed as having recording markers, and should be currently processing.
+        if (isset($data->lastchecked) && !empty($data->hasrecordingmarkers)) {
+            return "Processing";
+        }
+
+        // Still in the re-check period, as this key would not exist otherwise.
+        if (isset($data->lastchecked)) {
+            return "Waiting";
+        }
+
+        // Not gone past fetch date but no recording details yet.
+        return "Unknown";
     }
 
     public function col_createtime($row) {

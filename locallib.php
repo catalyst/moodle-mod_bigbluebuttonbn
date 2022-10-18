@@ -2288,6 +2288,13 @@ function bigbluebuttonbn_process_meeting_events($bigbluebuttonbn, $jsonobj) {
         'files' => $data->files,
         'polls' => $data->polls
     ];
+
+    // Store whether or not the meeting has been recorded (as indicated by existence of recording markers).
+    // If the record doesn't have this key set, the option might not be supported yet.
+    if (isset($jsonobj->hasrecordingmarkers)) {
+        $meta['hasrecordingmarkers'] = (int) $jsonobj->hasrecordingmarkers;
+    }
+
     // Stores overall meeting summary information.
     bigbluebuttonbn_log($bigbluebuttonbn, BIGBLUEBUTTON_LOG_EVENT_SUMMARY, $overrides, json_encode($meta), json_encode($jsonobj));
 }
