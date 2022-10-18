@@ -733,6 +733,13 @@ $string['view_analytics_filesize'] = 'Filesize';
 $string['view_analytics_queuestarttime'] = 'Queued At';
 $string['view_analytics_queueduration'] = 'Queue Duration';
 
+$string['view_analytics_status_ready'] = 'Ready';
+$string['view_analytics_status_invalid'] = 'Invalid';
+$string['view_analytics_status_expired'] = 'Expired';
+$string['view_analytics_status_processing'] = 'Processing';
+$string['view_analytics_status_waiting'] = 'Waiting';
+$string['view_analytics_status_unknown'] = 'Unknown';
+
 $string['strftimetime24seconds'] = '%H:%M:%S';
 $string['strftimetime12seconds'] = '%I:%M:%S %p';
 $string['strftimedatetimetimezone'] = '%d %B %Y, %I:%M %p %Z';

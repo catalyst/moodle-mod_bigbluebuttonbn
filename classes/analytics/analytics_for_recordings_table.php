@@ -86,32 +86,33 @@ class analytics_for_recordings_table extends \table_sql {
 
         // Recording details known and stored.
         if (!empty($data->playbackduration) && empty($data->recorded)) {
-            return "Ready";
+            return get_string('view_analytics_status_ready', 'mod_bigbluebuttonbn');
         }
 
         // No record id on the entry, no way to check for recording.
         if (!isset($data->recordid)) {
-            return "Invalid";
+            return get_string('view_analytics_status_invalid', 'mod_bigbluebuttonbn');
         }
 
+        // Gone past fetch date.
         if ((isset($data->recorded) && $data->recorded == false) || // Not recorded.
             (isset($data->record) && $data->record !== "true") // Record functionality not enabled.
         ) {
-            return "Expired"; // Gone past fetch date.
+            return get_string('view_analytics_status_expired', 'mod_bigbluebuttonbn');
         }
 
         // Confirmed as having recording markers, and should be currently processing.
         if (isset($data->lastchecked) && !empty($data->hasrecordingmarkers)) {
-            return "Processing";
+            return get_string('view_analytics_status_processing', 'mod_bigbluebuttonbn');
         }
 
         // Still in the re-check period, as this key would not exist otherwise.
         if (isset($data->lastchecked)) {
-            return "Waiting";
+            return get_string('view_analytics_status_waiting', 'mod_bigbluebuttonbn');
         }
 
         // Not gone past fetch date but no recording details yet.
-        return "Unknown";
+        return get_string('view_analytics_status_unknown', 'mod_bigbluebuttonbn');
     }
 
     public function col_createtime($row) {
