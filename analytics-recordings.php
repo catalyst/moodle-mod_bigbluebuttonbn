@@ -97,10 +97,12 @@ $wheresql = "timecreated > :timecreated
              AND log = :log
              AND meta IS NOT NULL
              AND ".$DB->sql_like('meta', ':recordtrue')."
+             AND NOT (".$DB->sql_like('meta', ':hasrecordingmarkers').")
              AND userid IS NOT NULL";
 $params = [
     'log' => BIGBLUEBUTTONBN_LOG_EVENT_CREATE,
-    'recordtrue' => '%"record":"true"%'
+    'recordtrue' => '%"record":"true"%',
+    'hasrecordingmarkers' => '%"hasrecordingmarkers":0%',
 ];
 if (!empty($bn) && !empty($bigbluebuttonbn->id)) {
     $wheresql .= " AND bigbluebuttonbnid = :bigbluebuttonbnid";

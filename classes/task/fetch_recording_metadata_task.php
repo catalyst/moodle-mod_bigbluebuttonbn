@@ -60,7 +60,7 @@ class fetch_recording_metadata_task extends \core\task\scheduled_task {
                   FROM {bigbluebuttonbn_logs}
                  WHERE recordid IS NULL
                    AND log = :log
-                   AND NOT ".$DB->sql_like('meta', ':recordedfalse', false, false, $notlike = true)."
+                   AND NOT ".$DB->sql_like('meta', ':recordedfalse')."
                    AND ".$DB->sql_like('meta', ':recordtrue');
         $createlogswithnorecordid = $DB->get_records_sql($sql, [
             'log' => BIGBLUEBUTTONBN_LOG_EVENT_CREATE,
