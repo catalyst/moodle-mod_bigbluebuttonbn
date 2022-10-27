@@ -102,7 +102,7 @@ class analytics_for_recordings_table extends \table_sql {
         }
 
         // Confirmed as having recording markers, and should be currently processing.
-        if (isset($data->lastchecked) && !empty($data->hasrecordingmarkers)) {
+        if (isset($data->lastchecked) && !empty($data->recorded)) {
             return get_string('view_analytics_status_processing', 'mod_bigbluebuttonbn');
         }
 
