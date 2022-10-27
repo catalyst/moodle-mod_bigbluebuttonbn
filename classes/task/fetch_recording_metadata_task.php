@@ -193,17 +193,34 @@ class fetch_recording_metadata_task extends \core\task\scheduled_task {
 
                 // Mark the record if no recording was detected, or should be considered recording-free.
                 if (!isset($recordings[$recordid])) {
+                    // Set a lastchecked timestamp, to ensure subsequent requests within a
+                    // certain threshold (defaulting to 20 minutes) are not made and the
+                    // requesting is skipped.
+                    $meta->lastchecked = time();
+
                     // Check and see if the record has a lastchecked already linked to it.
                     // If it has surpassed the threshold, it is safe to consider the meeting
                     // as having not been recorded.
-                    if (time() > $meeting->timecreated + TIME_BEFORE_FLAGGING_AS_NOT_RECORDED) {
+                    if (time() > ($meeting->timecreated + TIME_BEFORE_FLAGGING_AS_NOT_RECORDED)) {
                         unset($meta->lastchecked);
                         $meta->recorded = false;
-                    } else {
-                        // Set a lastchecked timestamp, to ensure subsequent requests within a
-                        // certain threshold (defaulting to 20 minutes) are not made and the
-                        // requesting is skipped.
-                        $meta->lastchecked = time();
+                    }
+
+                    // As long as the recording isn't considered expired - due to too long of a wait time.
+                    // Check and see if the recording analytics returned anything meaningful (e.g. hasrecordingmarkers).
+                    if (!isset($meta->recorded) || $meta->recorded !== true) {
+                        $summary = $DB->get_record('bigbluebuttonbn_logs', [
+                            'meetingid' => $meeting->meetingid,
+                            'recordid' => $recordid,
+                            'userid' => null,
+                            'log' => BIGBLUEBUTTON_LOG_EVENT_SUMMARY
+                        ]);
+                        if (!empty($summary)) {
+                            $summarymeta = json_decode($summary->meta);
+                            if (property_exists($summarymeta, 'hasrecordingmarkers')) {
+                                $meta->recorded = (bool) $summarymeta->hasrecordingmarkers;
+                            }
+                        }
                     }
 
                     $DB->update_record('bigbluebuttonbn_logs', ['id' => $meeting->id, 'meta' => json_encode($meta)]);
