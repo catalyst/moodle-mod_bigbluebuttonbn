@@ -85,7 +85,7 @@ class analytics_for_recordings_table extends \table_sql {
         $data = json_decode($row->meta);
 
         // Recording details known and stored.
-        if (!empty($data->playbackduration) && empty($data->recorded)) {
+        if (!empty($data->playbackduration)) {
             return get_string('view_analytics_status_ready', 'mod_bigbluebuttonbn');
         }
 
