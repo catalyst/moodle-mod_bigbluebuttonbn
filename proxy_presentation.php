@@ -158,16 +158,18 @@ $curl->setopt([
             '.webm' => 'video/webm'
         ];
 
-        foreach ($fileextensioncontenttypemappings as $ending => $contenttype) {
-            $doesendwith = substr_compare($relativepath, $ending, -strlen($ending)) === 0;
+        if (stripos($header, 'content-type') !== false) {
+            foreach ($fileextensioncontenttypemappings as $ending => $contenttype) {
+                $doesendwith = substr_compare($relativepath, $ending, -strlen($ending)) === 0;
 
-            if (!$doesendwith) {
-                continue;
+                if (!$doesendwith) {
+                    continue;
+                }
+
+                // Header ends with matched extension, force content type and return.
+                header('content-type: ' . $contenttype);
+                return strlen($header);
             }
-
-            // Header ends with matched extension, force content type and return.
-            header('content-type: ' . $contenttype);
-            return strlen($header);
         }
 
         if (!$jstobereplaced ||  stripos($header, 'content-length') === false) {
