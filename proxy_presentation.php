@@ -147,7 +147,29 @@ $curl->setopt([
     'CURLOPT_CERTINFO'          => 1,
     'CURLOPT_SSL_VERIFYPEER'    => true,
     'CURLOPT_FOLLOWLOCATION'    => false,
-    'CURLOPT_HEADERFUNCTION'    => function ($curl, $header) use ($jstobereplaced) {
+    'CURLOPT_HEADERFUNCTION'    => function ($curl, $header) use ($jstobereplaced, $relativepath) {
+        // BBB returns all files as text/html. Here we re-map their content type depending on the file extension.
+        // Having the incorrect content type can cause issues in some browsers.
+        $fileextensioncontenttypemappings = [
+            '.m4v' => 'video/m4v',
+            '.css' => 'text/css',
+            '.js' => 'text/javascript',
+            '.xml' => 'text/xml',
+            '.webm' => 'video/webm'
+        ];
+
+        foreach ($fileextensioncontenttypemappings as $ending => $contenttype) {
+            $doesendwith = substr_compare($relativepath, $ending, -strlen($ending)) === 0;
+
+            if (!$doesendwith) {
+                continue;
+            }
+
+            // Header ends with matched extension, force content type and return.
+            header('content-type: ' . $contenttype);
+            return strlen($header);
+        }
+
         if (!$jstobereplaced ||  stripos($header, 'content-length') === false) {
             header($header);
         }
